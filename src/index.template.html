@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0284c7">
+<title>책모임 함께 챌린지 - 듀얼 미션</title>
+<style>
+  :root {
+    --primary: #0284c7;
+    --primary-light: #e0f2fe;
+    --primary-dark: #0369a1;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    --success: #10b981;
+    --success-light: #d1fae5;
+    --purple: #8b5cf6;
+    --purple-light: #ede9fe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding-bottom: 60px;
+  }
+  .container { max-width: 520px; margin: 0 auto; padding: 16px; }
+  .badge {
+    display: inline-block; background: var(--primary-light); color: var(--primary-dark);
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .header {
+    background: var(--card); border-radius: 20px; padding: 20px;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); border: 1px solid var(--border);
+    margin-bottom: 16px; text-align: center;
+  }
+  .challenge-title { font-size: 19px; font-weight: 800; margin-bottom: 6px; }
+  .challenge-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 14px; }
+  .mission-tags-header { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .m-tag { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 8px; }
+  .progress-wrap {
+    background: #f1f5f9; border-radius: 12px; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; }
+  .progress-bar-bg { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #0284c7); border-radius: 999px; transition: width .3s; }
+  .window-dates { font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; }
+
+  .tab-nav { display: flex; background: #e2e8f0; padding: 4px; border-radius: 14px; margin-bottom: 16px; }
+  .tab-btn {
+    flex: 1; border: none; background: transparent; padding: 10px; font-size: 14px; font-weight: 700;
+    color: var(--text-sub); border-radius: 10px; cursor: pointer; transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+
+  .card {
+    background: var(--card); border-radius: 18px; padding: 18px;
+    box-shadow: 0 4px 16px -2px rgba(0,0,0,0.04); border: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  .my-profile-bar {
+    display: flex; align-items: center; justify-content: space-between; background: #f0f9ff;
+    border: 1px solid #bae6fd; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px;
+  }
+  .my-name { font-size: 14px; font-weight: 800; color: #0369a1; display: flex; align-items: center; gap: 6px; }
+  .reset-link { font-size: 11px; color: #64748b; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; }
+
+  .mission-list { display: flex; flex-direction: column; gap: 10px; }
+  .mission-item {
+    display: flex; align-items: center; justify-content: space-between; background: #f8fafc;
+    border: 1.5px solid var(--border); border-radius: 14px; padding: 14px; transition: all 0.2s;
+  }
+  .mission-item.completed { background: #f0fdf4; border-color: #86efac; }
+  .mission-info { display: flex; align-items: center; gap: 10px; }
+  .mission-icon { font-size: 26px; line-height: 1; }
+  .mission-name { font-size: 15px; font-weight: 700; }
+  .mission-desc { font-size: 11px; color: var(--text-sub); }
+  .mission-check-btn {
+    border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 700;
+    cursor: pointer; background: #e2e8f0; color: #475569; font-family: inherit; transition: all 0.15s;
+  }
+  .mission-check-btn:active { transform: scale(0.96); }
+  .mission-check-btn.done { background: #16a34a; color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,0.3); }
+
+  .all-clear-banner {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, #fef08a, #fde047); border: 1px solid #facc15;
+    border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 800; color: #854d0e;
+    margin-top: 12px; animation: bounce 0.6s ease;
+  }
+  @keyframes bounce { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-3px);} }
+
+  .status-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .status-col { background: #f8fafc; border-radius: 12px; padding: 10px 8px; border: 1px solid var(--border); text-align: center; }
+  .status-col.all-clear { background: #fefce8; border-color: #fef08a; }
+  .status-col.half-done { background: #f0f9ff; border-color: #bae6fd; }
+  .status-col-title { font-size: 11px; font-weight: 800; margin-bottom: 6px; }
+  .status-col.all-clear .status-col-title { color: #854d0e; }
+  .status-col.half-done .status-col-title { color: #0369a1; }
+  .status-col.yet .status-col-title { color: #64748b; }
+  .col-chips { display: flex; flex-direction: column; gap: 4px; }
+  .col-chip { font-size: 11px; font-weight: 600; padding: 3px 6px; border-radius: 6px; background: #fff; border: 1px solid var(--border); }
+  .col-chip.gold { background: #fef9c3; border-color: #fde047; color: #713f12; }
+  .col-chip.blue { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+
+  .table-filter-bar { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; border: 1px solid var(--border);
+    background: #fff; color: var(--text-sub); cursor: pointer; font-family: inherit;
+  }
+  .filter-chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .matrix-table-wrap { overflow-x: auto; margin-top: 4px; border-radius: 12px; border: 1px solid var(--border); }
+  table.matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; background: #fff; }
+  table.matrix-table th, table.matrix-table td {
+    padding: 7px 3px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; white-space: nowrap;
+  }
+  table.matrix-table th { background: #f8fafc; font-weight: 700; color: var(--text-sub); }
+  table.matrix-table th.today-col { color: var(--primary); background: #e0f2fe; }
+  table.matrix-table td.today-col { background: #f0f9ff; }
+  table.matrix-table td.member-col {
+    font-weight: 700; background: #f8fafc; text-align: left; padding-left: 8px;
+    position: sticky; left: 0; z-index: 1; border-right: 2px solid var(--border);
+  }
+  table.matrix-table tr.my-row { background: #f0f9ff !important; }
+  table.matrix-table tr.my-row td.member-col { background: #e0f2fe !important; color: #0369a1; }
+  .my-tag {
+    display: inline-block; background: #0284c7; color: #fff; font-size: 9px; font-weight: 700;
+    padding: 1px 3px; border-radius: 4px; margin-left: 2px;
+  }
+  .dual-stamp { display: inline-flex; align-items: center; justify-content: center; gap: 1px; font-size: 11px; line-height: 1; letter-spacing: -1px; }
+  .stamp-sub-dot {
+    display: inline-block; width: 13px; height: 13px; line-height: 13px; border-radius: 50%;
+    font-size: 9px; text-align: center; background: #e2e8f0; color: #94a3b8;
+  }
+  .rate-cell { font-weight: 800; color: #0284c7; }
+
+  .copy-preview {
+    background: #fef08a22; border: 1.5px dashed #facc15; border-radius: 12px; padding: 12px;
+    font-size: 13px; color: #713f12; line-height: 1.6; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all;
+  }
+  .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
+  .mini-btn {
+    flex: 1; padding: 8px; font-size: 12px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-family: inherit;
+  }
+  .mini-btn.active { background: #0284c7; color: #fff; border-color: #0284c7; }
+  .copy-btn {
+    width: 100%; padding: 12px; background: #fee500; color: #000; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
+  .form-input, .form-textarea, .form-select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 16px; color: var(--text); outline: none; background: #fff; font-family: inherit;
+  }
+  .item-config-box {
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 10px;
+    margin-bottom: 8px; display: flex; gap: 8px; align-items: center;
+  }
+  .add-item-btn {
+    width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 10px; background: #fff;
+    font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; margin-bottom: 14px; font-family: inherit;
+  }
+  .save-btn {
+    width: 100%; padding: 12px; background: var(--text); color: #fff; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .danger-btn {
+    width: 100%; padding: 11px; background: #fff; color: #dc2626; border: 1.5px solid #fecaca;
+    border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 8px; font-family: inherit;
+  }
+  .device-row {
+    display: flex; align-items: center; justify-content: space-between; background: #f8fafc;
+    border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; font-size: 13px;
+  }
+  .pin-dots { display: flex; gap: 14px; justify-content: center; margin: 22px 0; }
+  .pin-dot {
+    width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); background: #fff;
+  }
+  .pin-dot.filled { background: var(--primary); border-color: var(--primary); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+  .pin-key {
+    padding: 16px; font-size: 20px; font-weight: 700; border: 1px solid var(--border); border-radius: 14px;
+    background: #fff; cursor: pointer; font-family: inherit;
+  }
+  .pin-key:active { background: var(--primary-light); }
+  .gate-note { font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 10px; }
+
+  .claim-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+  .claim-item {
+    display: flex; align-items: center; justify-content: space-between; padding: 13px 14px;
+    border: 1.5px solid var(--border); border-radius: 14px; background: #f8fafc; font-size: 15px;
+    font-weight: 700; cursor: pointer;
+  }
+  .claim-item:active { background: var(--primary-light); }
+  .claim-item.taken { opacity: 0.45; cursor: not-allowed; }
+  .claim-item.taken .claim-lock { font-size: 12px; color: var(--text-sub); font-weight: 600; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: rgba(15,23,42,0.9); color: #fff; padding: 10px 20px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; transition: transform 0.3s cubic-bezier(0.18,0.89,0.32,1.28); z-index: 9999;
+    max-width: 88%; text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .confetti { position: fixed; top: -12px; font-size: 20px; z-index: 9998; animation: fall 2.6s linear forwards; pointer-events: none; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(340deg); opacity: 0.7; } }
+  .empty-note { font-size: 13px; color: var(--text-sub); text-align: center; padding: 8px 0; }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ==DOMAIN-START==
+__DOMAIN_SOURCE__
+// ==DOMAIN-END==
+
+/* ============================ 앱 (UI/저장소/라우팅) ============================ */
+(function () {
+  const D = ChallengeDomain;
+  const K = {
+    config: 'bcc.config.v1',
+    checkins: 'bcc.checkins.v1',
+    claims: 'bcc.claims.v1',
+    device: 'bcc.device.v1',
+    admin: 'bcc.admin.v1',
+  };
+
+  // ---------- 저장소 ----------
+  function lsGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw == null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+  function lsDel(key) { try { localStorage.removeItem(key); } catch (e) {} }
+
+  function rawConfig() { return lsGet(K.config, null); }
+  function loadConfig() {
+    const raw = rawConfig();
+    if (!raw) return D.sanitizeConfig(D.DEFAULT_CONFIG).config;
+    const res = D.sanitizeConfig(raw);
+    return res.ok ? res.config : D.sanitizeConfig(D.DEFAULT_CONFIG).config;
+  }
+  function saveConfig(cfg) { lsSet(K.config, cfg); }
+  function loadCheckins() { return lsGet(K.checkins, {}); }
+  function saveCheckins(c) { lsSet(K.checkins, c); }
+  function loadClaims() { return lsGet(K.claims, {}); }        // 이 기기가 만든 등록 맵(정보 표시용)
+  function saveClaims(c) { lsSet(K.claims, c); }
+  function loadDevice() { return lsGet(K.device, null); }      // {memberId, token}
+  function saveDevice(d) { lsSet(K.device, d); }
+  function clearDevice() { lsDel(K.device); lsDel(K.claims); }
+  function deviceToken() {
+    let d = loadDevice();
+    if (d && d.token) return d.token;
+    const token = D.uid('dev');
+    saveDevice({ memberId: null, token });
+    return token;
+  }
+  function adminUnlocked() { try { return sessionStorage.getItem(K.admin) === '1'; } catch (e) { return false; } }
+  function setAdminUnlocked(v) { try { v ? sessionStorage.setItem(K.admin, '1') : sessionStorage.removeItem(K.admin); } catch (e) {} }
+
+  // ---------- 상태 ----------
+  let config = loadConfig();
+  let state = {
+    config: config,
+    claims: loadClaims(),          // 이 기기의 등록 기록(로컬 싱크용)
+    checkins: loadCheckins(),
+  };
+  let currentTab = 'user';         // 'user' | 'admin'
+  let tableFilter = 'all';
+  let msgTemplate = 'today';
+  let pinEntry = '';
+  let pendingMissionDraft = null;
+
+  // 도메인 함수가 상태를 바꾸면 저장까지 책임진다
+  function applyState(res) {
+    state = res.state;
+    config = state.config;
+    saveCheckins(state.checkins);
+    saveClaims(state.claims);
+    return res;
+  }
+
+  // ---------- 공용 UI ----------
+  const app = document.getElementById('app');
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+  function confetti() {
+    const icons = ['💧', '📖', '👑', '🎉', '✨'];
+    for (let i = 0; i < 22; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.textContent = icons[i % icons.length];
+      el.style.left = (Math.random() * 96) + 'vw';
+      el.style.animationDelay = (Math.random() * 0.5) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3200);
+    }
+  }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => showToast('복사되었습니다! 카톡방에 붙여넣으세요 💬'),
+        () => fallbackCopy(text)
+      );
+    } else fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('복사되었습니다!'); }
+    catch (e) { showToast('복사에 실패했어요. 문구를 길게 눌러 복사해 주세요.'); }
+    ta.remove();
+  }
+  function pageUrl() { return location.origin + location.pathname; }
+
+  // ---------- 라우팅 ----------
+  function isAdminMode() { return D.isAdminRoute(location.hash); }
+  let pinTargetTab = null;
+
+  function route() {
+    const admin = isAdminMode();
+    pinEntry = '';
+    if (!admin) {
+      currentTab = 'user';
+      renderUser();
+      return;
+    }
+    if (!adminUnlocked()) { renderPinGate(); return; }
+    currentTab = currentTab === 'user' ? 'user' : 'admin';
+    if (currentTab === 'admin') renderAdmin(); else renderUser();
+  }
+  window.addEventListener('hashchange', route);
+
+  // ---------- 첫 방문 (기기 등록) ----------
+  function renderClaimPicker() {
+    const token = deviceToken();
+    const claimedIds = new Set();
+    for (const [mid, c] of Object.entries(loadClaims())) claimedIds.add(c.token === token ? mid : mid);
+    const boundMember = loadDevice() && loadDevice().memberId;
+    const items = config.members.map(m => {
+      const boundHere = boundMember === m.id;
+      return `<div class="claim-item ${boundHere ? '' : 'taken'}" data-mid="${esc(m.id)}" data-here="${boundHere ? 1 : 0}">
+        <span>${esc(m.name)}${boundHere ? ' <span style="font-size:11px;color:#0369a1;">(이 기기 등록됨)</span>' : ''}</span>
+        <span class="claim-lock">${boundHere ? '✓' : '🔒 등록된 기기 없음'}</span>
+      </div>`;
+    }).join('');
+    app.innerHTML = `
+      <div class="header">
+        <span class="badge">📚 ${esc(config.title)}</span>
+        <h1 class="challenge-title">👋 누구로 등록할까요?</h1>
+        <p class="challenge-desc">이름을 누르면 <strong>이 폰이 그분의 전용 인증기</strong>가 돼요.<br>한 번 등록되면 다른 사람이 대신 인증할 수 없어요. 🔒</p>
+        <div class="mission-tags-header">${config.missions.map(ms =>
+          `<span class="m-tag" style="background:#e0f2fe;color:#0369a1;">${esc(ms.icon)} ${esc(ms.name)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📱 내 기기 등록 (최초 1회)</div>
+        <div class="claim-list">${items}</div>
+        <p class="gate-note">이미 다른 기기에서 등록한 이름은 잠겨 보일 수 있어요.<br>모임장 관리실에서 등록을 초기화해 줄 수 있어요.</p>
+      </div>`;
+    app.querySelectorAll('.claim-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const mid = el.getAttribute('data-mid');
+        const here = el.getAttribute('data-here') === '1';
+        if (here) { showToast('이미 이 기기에 등록된 이름이에요.'); return; }
+        const now = Date.now();
+        applyState(D.claimDevice(state, mid, token, now));
+        if (state.claims[mid]) {
+          saveDevice({ memberId: mid, token });
+          saveClaims(state.claims);
+          const me = config.members.find(m => m.id === mid);
+          showToast('🎉 ' + (me ? me.name : '') + ' 님 전용 기기로 등록되었어요!');
+          route();
+        }
+      });
+    });
+  }
+
+  // ---------- 참가자 화면 ----------
+  function renderUser() {
+    config = state.config;
+    const dev = loadDevice();
+    if (!dev || !dev.memberId || !config.members.some(m => m.id === dev.memberId)) {
+      renderClaimPicker();
+      return;
+    }
+    const meId = dev.memberId;
+    const me = config.members.find(m => m.id === meId);
+    const todayKeyStr = D.todayKey();
+    const win = D.challengeWindow(config, todayKeyStr);
+    const myStatus = D.memberDayStatus(state, meId, todayKeyStr);
+    const groups = D.todayGroups(config, state, todayKeyStr);
+    const total = config.members.length;
+
+    const missionTags = config.missions.map(ms =>
+      `<span class="m-tag" style="background:${ms.id === config.missions[0].id ? '#e0f2fe;color:#0369a1;border:1px solid #bae6fd' : '#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff'};">${esc(ms.icon)} 미션: ${esc(ms.name)}</span>`
+    ).join('');
+
+    const missionItems = config.missions.map(ms => {
+      const done = myStatus.completedMissionIds.includes(ms.id);
+      return `<div class="mission-item ${done ? 'completed' : ''}">
+        <div class="mission-info">
+          <span class="mission-icon">${esc(ms.icon)}</span>
+          <div>
+            <div class="mission-name">${esc(ms.name)}</div>
+            <div class="mission-desc">${esc(ms.desc || '')}</div>
+          </div>
+        </div>
+        <button class="mission-check-btn ${done ? 'done' : ''}" data-ms="${esc(ms.id)}">${done ? '✅ 완료됨' : '인증하기'}</button>
+      </div>`;
+    }).join('');
+
+    const chips = (arr, cls, suffixFn) => arr.length
+      ? arr.map(m => `<span class="col-chip ${cls}">${esc(D.shortName(m.name))}${suffixFn ? suffixFn(m) : ''}</span>`).join('')
+      : '<span class="col-chip" style="color:#94a3b8;">—</span>';
+
+    const mx = D.matrix(config, state, todayKeyStr, tableFilter);
+    const headDays = mx.days.map(d =>
+      `<th class="${d.isToday ? 'today-col' : ''}">${d.day}${d.isToday ? '(오늘)' : ''}</th>`).join('');
+    const bodyRows = mx.rows.map(r => {
+      const isMe = r.memberId === meId;
+      const cells = r.cells.map(c => {
+        const stamps = c.stamps.map(s =>
+          `<span class="stamp-sub-dot ${s.on ? (s.missionId === config.missions[0].id ? 'water-on' : 'book-on') : ''}">${s.on ? s.icon : '○'}</span>`
+        ).join('');
+        return `<td class="${c.isToday ? 'today-col' : ''}"><span class="dual-stamp">${stamps}</span></td>`;
+      }).join('');
+      return `<tr class="${isMe ? 'my-row' : ''}">
+        <td class="member-col">${esc(r.name)}${isMe ? ' <span class="my-tag">나</span>' : ''}</td>
+        ${cells}
+        <td class="${isMe ? 'rate-cell' : ''}" ${isMe ? 'style="font-weight:800;color:#0284c7;"' : ''}>${r.rate}%</td>
+      </tr>`;
+    }).join('');
+
+    const filterChips = [
+      ['all', '모아보기'],
+      ...config.missions.map(ms => [ms.id, `${ms.icon} ${esc(ms.short)}만`]),
+    ].map(([id, label]) =>
+      `<button class="filter-chip ${tableFilter === id ? 'active' : ''}" data-filter="${esc(id)}">${label}</button>`
+    ).join('');
+
+    app.innerHTML = `
+      <div class="header">
+        <span class="badge">📚 책모임 함께 챌린지</span>
+        <h1 class="challenge-title">✨ ${esc(config.title)}</h1>
+        <p class="challenge-desc">${esc(config.subtitle)}</p>
+        <div class="mission-tags-header">${missionTags}</div>
+        <div class="progress-wrap">
+          <div class="progress-labels">
+            <span>챌린지 진행도</span>
+            <span style="color:var(--primary);">${win.started ? 'DAY ' + win.day : '시작 전'} / ${win.total}일 (${win.progressPct}%)</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${win.progressPct}%;"></div></div>
+          <div class="window-dates">
+            <span>시작일: ${esc(config.startDate)}</span>
+            <span>${win.ended ? '종료: ' + esc(win.endDate) : '종료일: ' + esc(win.endDate) + ' (D-' + win.daysLeft + ')'}</span>
+          </div>
+        </div>
+      </div>
+
+      ${adminUnlocked() ? `<div class="tab-nav">
+        <button class="tab-btn active">🙋‍♀️ 우리 모임 현황</button>
+        <button class="tab-btn" id="goAdmin">⚙️ 모임장 관리실</button>
+      </div>` : ''}
+
+      <div class="card" id="myAuthCard">
+        <div class="my-profile-bar">
+          <div class="my-name"><span>🔒</span><span>${esc(me.name)} 님</span>
+            <span style="font-size:11px;font-weight:500;color:#0284c7;">(내 기기 등록됨)</span></div>
+        </div>
+        <div class="card-title">
+          <span>⚡️ 오늘의 원탭 인증 ${win.started ? '(DAY ' + win.day + ')' : ''}</span>
+          <span style="font-size:12px;font-weight:700;color:var(--primary);margin-left:auto;">${myStatus.done} / ${myStatus.total} 달성</span>
+        </div>
+        ${win.ended ? '<p class="empty-note">챌린지가 종료되었어요. 수고 많으셨습니다 🎉</p>' :
+          !win.started ? '<p class="empty-note">챌린지 시작 전이에요. 시작일: ' + esc(config.startDate) + '</p>' :
+          `<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">각 항목을 달성했을 때 바로 눌러주세요. 시간대가 달라도 따로 체크할 수 있어요!</p>
+          <div class="mission-list">${missionItems}</div>
+          ${myStatus.allClear && config.missions.length > 1 ? '<div class="all-clear-banner">👑 오늘 모든 미션 올클리어!</div>' : ''}`}
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>📊 오늘 멤버 달성 현황</span>
+          <span style="font-size:12px;color:#64748b;margin-left:auto;">총 ${total}명</span>
+        </div>
+        <div class="status-grid-3">
+          <div class="status-col all-clear">
+            <div class="status-col-title">👑 올클리어 (${groups.allClear.length})</div>
+            <div class="col-chips">${chips(groups.allClear, 'gold', () => ' 👏')}</div>
+          </div>
+          <div class="status-col half-done">
+            <div class="status-col-title">🏃 일부 달성 (${groups.partial.length})</div>
+            <div class="col-chips">${chips(groups.partial, 'blue', m =>
+              ' (' + config.missions.filter(ms => state.checkins[m.id + '|' + todayKeyStr + '|' + ms.id]).map(ms => ms.icon).join('') + ')')}</div>
+          </div>
+          <div class="status-col yet">
+            <div class="status-col-title">⏳ 아직 (${groups.none.length})</div>
+            <div class="col-chips">${chips(groups.none, '')}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🔥 책모임 전체 스탬프판</span></div>
+        <div class="table-filter-bar">${filterChips}</div>
+        <p style="font-size:11px;color:var(--text-sub);margin-bottom:8px;">* 파란 행이 <strong>내 기록</strong>입니다. 아이콘 완료 / ○ 미완료</p>
+        <div class="matrix-table-wrap">
+          <table class="matrix-table">
+            <thead><tr><th>멤버</th>${headDays}<th>달성률</th></tr></thead>
+            <tbody>${bodyRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+
+    // 이벤트
+    app.querySelectorAll('.mission-check-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const res = applyState(D.toggleCheckin(state, {
+          memberId: meId, missionId: btn.getAttribute('data-ms'),
+          dateKey: todayKeyStr, todayKey: todayKeyStr, deviceToken: loadDevice().token,
+        }, Date.now()));
+        if (!res.ok) { showToast('인증할 수 없어요 (' + res.reason + ')'); return; }
+        saveCheckins(state.checkins);
+        const ms = config.missions.find(x => x.id === btn.getAttribute('data-ms'));
+        const after = D.memberDayStatus(state, meId, todayKeyStr);
+        if (res.completed && after.allClear) { showToast('👑 올클리어! ' + (ms ? ms.name : '')); confetti(); }
+        else showToast(res.completed ? (ms ? ms.icon + ' ' + ms.name : '') + ' 인증 완료!' : '인증이 취소되었어요.');
+        renderUser();
+      });
+    });
+    app.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        tableFilter = chip.getAttribute('data-filter');
+        renderUser();
+      });
+    });
+    const goAdmin = document.getElementById('goAdmin');
+    if (goAdmin) goAdmin.addEventListener('click', () => { location.hash = '#admin'; });
+  }
+
+  // ---------- PIN 게이트 ----------
+  function renderPinGate() {
+    app.innerHTML = `
+      <div class="header">
+        <span class="badge">👑 모임장 관리실</span>
+        <h1 class="challenge-title">🔒 PIN 번호 입력</h1>
+        <p class="challenge-desc">모임장만 접속할 수 있는 공간이에요.</p>
+      </div>
+      <div class="card">
+        <div class="pin-dots">${[0,1,2,3].map(i =>
+          `<span class="pin-dot ${i < pinEntry.length ? 'filled' : ''}"></span>`).join('')}</div>
+        <div class="pin-pad">
+          ${[1,2,3,4,5,6,7,8,9].map(n => `<button class="pin-key" data-k="${n}">${n}</button>`).join('')}
+          <button class="pin-key" data-k="del" style="font-size:14px;">⌫</button>
+          <button class="pin-key" data-k="0">0</button>
+          <button class="pin-key" data-k="go" style="font-size:14px;background:#0284c7;color:#fff;border-color:#0284c7;">확인</button>
+        </div>
+        <p class="gate-note">기본 PIN은 1234 입니다. 관리실에서 바꿀 수 있어요.</p>
+      </div>
+      <button class="danger-btn" id="backMember">🙋‍♀️ 멤버 화면으로 돌아가기</button>`;
+    app.querySelectorAll('.pin-key').forEach(k => {
+      k.addEventListener('click', () => {
+        const key = k.getAttribute('data-k');
+        if (key === 'del') pinEntry = pinEntry.slice(0, -1);
+        else if (key === 'go') { submitPin(); return; }
+        else if (pinEntry.length < 4) pinEntry += key;
+        if (pinEntry.length === 4) submitPin();
+        else renderPinGate();
+      });
+    });
+    document.getElementById('backMember').addEventListener('click', () => {
+      location.hash = '';
+    });
+    function submitPin() {
+      if (D.checkPin(pinEntry, config.adminPin)) {
+        setAdminUnlocked(true);
+        pinEntry = '';
+        currentTab = 'admin';
+        showToast('👑 관리실에 오신 걸 환영해요!');
+        renderAdmin();
+      } else {
+        pinEntry = '';
+        showToast('PIN 번호가 틀렸어요.');
+        renderPinGate();
+      }
+    }
+  }
+
+  // ---------- 관리실 ----------
+  function renderAdmin() {
+    const todayKeyStr = D.todayKey();
+    const win = D.challengeWindow(config, todayKeyStr);
+    const msg = D.kakaoMessage(config, state, todayKeyStr, msgTemplate, pageUrl());
+    const dev = loadDevice();
+
+    const tplDefs = [['today', '오늘 현황'], ['nudge', '미참여 독려'], ['final', '완주 응원']];
+    const tplBtns = tplDefs.map(([id, label]) =>
+      `<button class="mini-btn ${msgTemplate === id ? 'active' : ''}" data-tpl="${id}">${label}</button>`).join('');
+
+    const missionBoxes = config.missions.map(ms => `
+      <div class="item-config-box" data-ms="${esc(ms.id)}">
+        <input class="form-input mi-icon" style="width:52px;text-align:center;" type="text" value="${esc(ms.icon)}" maxlength="2">
+        <input class="form-input mi-name" style="flex:1;" type="text" value="${esc(ms.name)}">
+        <input class="form-input mi-short" style="width:52px;" type="text" value="${esc(ms.short)}" maxlength="2" title="약칭">
+        <button class="mi-del" style="border:none;background:none;font-size:16px;color:#ef4444;cursor:pointer;">🗑</button>
+      </div>`).join('');
+
+    const deviceRows = config.members.map(m => {
+      const bound = Object.values(state.claims).some(c => c.token) && !!state.checkins && Object.keys(state.claims).includes(m.id);
+      const has = D.canToggle(state, { memberId: m.id, missionId: config.missions[0].id, dateKey: todayKeyStr, todayKey: todayKeyStr, deviceToken: (state.claims[m.id] || {}).token || '' });
+      const registered = state.claims[m.id];
+      return `<div class="device-row">
+        <span>${esc(m.name)} <span style="font-size:11px;color:${registered ? '#0369a1' : '#94a3b8'};">${registered ? '📱 등록됨' : '⏳ 미등록'}</span></span>
+        ${registered ? `<button class="dev-release" data-mid="${esc(m.id)}" style="border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">등록 해제</button>` : ''}
+      </div>`;
+    }).join('');
+
+    app.innerHTML = `
+      <div class="tab-nav">
+        <button class="tab-btn ${currentTab === 'user' ? 'active' : ''}" id="goUser">🙋‍♀️ 모임 현황</button>
+        <button class="tab-btn active">⚙️ 관리실</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💬 카톡 단톡방 1초 공유 문구</div>
+        <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">현황 요약 문구를 복사해 단톡방에 붙여넣으세요.</p>
+        <div class="btn-group">${tplBtns}</div>
+        <div class="copy-preview" id="kakaoPreviewText">${esc(msg)}</div>
+        <button class="copy-btn" id="copyKakao">💬 카카오톡 문구 복사하기</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ 챌린지 항목 설정</div>
+        <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">미션을 자유롭게 추가/수정/삭제하세요. (아이콘 / 이름 / 약칭)</p>
+        <div id="itemConfigList">${missionBoxes}</div>
+        <button class="add-item-btn" id="addMission">+ 챌린지 항목 추가하기</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group">
+            <label class="form-label">시작일</label>
+            <input class="form-input" id="cfgStart" type="date" value="${esc(config.startDate)}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">기간(일수)</label>
+            <input class="form-input" id="cfgDays" type="number" min="1" max="60" value="${config.durationDays}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">챌린지 제목</label>
+          <input class="form-input" id="cfgTitle" type="text" value="${esc(config.title)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">참가 멤버 (한 줄에 한 명)</label>
+          <textarea class="form-textarea" id="cfgMembers" rows="6">${esc(config.members.map(m => m.name).join('\n'))}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">카톡 문구에 붙을 인증 링크 (비우면 현재 주소)</label>
+          <input class="form-input" id="cfgNoticeUrl" type="url" placeholder="${esc(pageUrl())}" value="${esc(config.noticeUrl || '')}">
+        </div>
+        <button class="save-btn" id="saveCfg">설정 저장하기</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📱 기기 등록 현황</div>
+        <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px;">멤버가 첫 접속에서 기기를 등록하면 '등록됨'으로 바뀌어요. 폰을 바꾼 멤버는 등록 해제 후 다시 등록할 수 있어요.</p>
+        ${deviceRows}
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔐 보안 · 관리</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group">
+            <label class="form-label">새 PIN (4자리)</label>
+            <input class="form-input" id="cfgPin" type="password" inputmode="numeric" maxlength="4" placeholder="****">
+          </div>
+        </div>
+        <button class="save-btn" id="savePin">PIN 변경</button>
+        <button class="danger-btn" id="resetDevice">이 기기 등록 해제 (테스트용)</button>
+        <button class="danger-btn" id="resetCheckins">인증 기록 전체 초기화 (되돌릴 수 없음)</button>
+        <button class="danger-btn" id="resetAll">챌린지 전체 초기화 (설정·기록 모두)</button>
+      </div>`;
+
+    // 탭 이동
+    document.getElementById('goUser').addEventListener('click', () => { currentTab = 'user'; renderUser(); });
+
+    // 카톡 문구
+    app.querySelectorAll('[data-tpl]').forEach(b => {
+      b.addEventListener('click', () => {
+        msgTemplate = b.getAttribute('data-tpl');
+        renderAdmin();
+      });
+    });
+    document.getElementById('copyKakao').addEventListener('click', () => {
+      copyText(document.getElementById('kakaoPreviewText').innerText);
+    });
+
+    // 미션 항목
+    document.getElementById('addMission').addEventListener('click', () => {
+      const box = document.createElement('div');
+      box.className = 'item-config-box';
+      box.setAttribute('data-ms', '');
+      box.innerHTML = `<input class="form-input mi-icon" style="width:52px;text-align:center;" type="text" value="⭐" maxlength="2">
+        <input class="form-input mi-name" style="flex:1;" type="text" placeholder="새 미션 이름">
+        <input class="form-input mi-short" style="width:52px;" type="text" placeholder="약칭" maxlength="2">
+        <button class="mi-del" style="border:none;background:none;font-size:16px;color:#ef4444;cursor:pointer;">🗑</button>`;
+      box.querySelector('.mi-del').addEventListener('click', () => box.remove());
+      document.getElementById('itemConfigList').appendChild(box);
+      box.querySelector('.mi-name').focus();
+    });
+    app.querySelectorAll('.mi-del').forEach(b => b.addEventListener('click', () => b.closest('.item-config-box').remove()));
+
+    document.getElementById('saveCfg').addEventListener('click', () => {
+      const missions = [];
+      app.querySelectorAll('#itemConfigList .item-config-box').forEach(box => {
+        missions.push({
+          id: box.getAttribute('data-ms') || '',
+          icon: box.querySelector('.mi-icon').value,
+          name: box.querySelector('.mi-name').value,
+          desc: (config.missions.find(x => x.id === box.getAttribute('data-ms')) || {}).desc || '',
+          short: box.querySelector('.mi-short').value,
+        });
+      });
+      const members = D.parseMembersText(document.getElementById('cfgMembers').value, config.members);
+      const draft = {
+        ...config,
+        title: document.getElementById('cfgTitle').value,
+        startDate: document.getElementById('cfgStart').value,
+        durationDays: Number(document.getElementById('cfgDays').value),
+        noticeUrl: document.getElementById('cfgNoticeUrl').value,
+        missions, members,
+      };
+      const res = D.sanitizeConfig(draft);
+      if (!res.ok) {
+        showToast('저장 실패: ' + ({ invalid_start_date: '시작일 형식', no_members: '멤버 최소 1명', no_missions: '미션 최소 1개', invalid_pin: 'PIN' }[res.error] || res.error));
+        return;
+      }
+      config = res.config;
+      state.config = config;
+      saveConfig(config);
+      showToast('✅ 챌린지 설정이 저장되었어요!');
+      renderAdmin();
+    });
+
+    // 기기 등록 해제
+    app.querySelectorAll('.dev-release').forEach(b => {
+      b.addEventListener('click', () => {
+        const mid = b.getAttribute('data-mid');
+        applyState(D.releaseDevice(state, mid));
+        saveClaims(state.claims);
+        const m = config.members.find(x => x.id === mid);
+        showToast((m ? m.name : '') + ' 님의 기기 등록이 해제되었어요.');
+        renderAdmin();
+      });
+    });
+
+    // PIN 변경
+    document.getElementById('savePin').addEventListener('click', () => {
+      const v = document.getElementById('cfgPin').value;
+      if (!D.isValidPin(v)) { showToast('PIN은 숫자 4자리여야 해요.'); return; }
+      config.adminPin = v;
+      state.config = config;
+      saveConfig(config);
+      document.getElementById('cfgPin').value = '';
+      showToast('🔐 PIN이 변경되었어요.');
+    });
+
+    // 초기화
+    document.getElementById('resetDevice').addEventListener('click', () => {
+      clearDevice();
+      showToast('이 기기의 등록이 해제되었어요. 새로 이름을 선택해 주세요.');
+      route();
+    });
+    document.getElementById('resetCheckins').addEventListener('click', () => {
+      if (!confirm('모든 인증 기록을 지울까요? 되돌릴 수 없어요.')) return;
+      state.checkins = {};
+      saveCheckins({});
+      showToast('인증 기록이 초기화되었어요.');
+      renderAdmin();
+    });
+    document.getElementById('resetAll').addEventListener('click', () => {
+      if (!confirm('설정과 인증 기록을 모두 지우고 처음 상태로 돌아갈까요?')) return;
+      lsDel(K.config); lsDel(K.checkins); clearDevice();
+      setAdminUnlocked(false);
+      config = loadConfig();
+      state = { config, claims: {}, checkins: {} };
+      showToast('챌린지가 초기화되었어요.');
+      location.hash = '';
+    });
+  }
+
+  route();
+})();
+</script>
+</body>
+</html>
